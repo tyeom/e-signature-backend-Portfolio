@@ -26,6 +26,10 @@ export class NotiSettingsController {
 
   @Get('notification')
   @RBAC(Role.USER)
+  @ApiResponse({
+    status: 200,
+    description: '설정된 notification 정보 응답',
+  })
   findByUserId(@UserDecorator() user: User) {
     return this.notiSettingsService.findByUserId(user);
   }
