@@ -1,0 +1,8 @@
+[p12 개인키 및 인증서 생성]
+* openssl 설치 : https://slproweb.com/products/Win32OpenSSL.html
+Win64 OpenSSL v3.4.1 / MSI 설치
+
+openssl.exe genrsa -out private.key 2048
+openssl.exe req -new -key private.key -out certificate.csr
+openssl.exe x509 -req -days 365 -in certificate.csr -signkey private.key -out certificate.crt
+openssl.exe pkcs12 -export -out certificate.p12 -inkey private.key -in certificate.crt
