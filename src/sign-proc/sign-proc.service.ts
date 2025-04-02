@@ -22,8 +22,17 @@ import { SignLog } from './entities/sign-log.entity';
 import { Repository } from 'typeorm';
 import { CreateSignLogDto } from './dto/create-sign-log.dto';
 import { DtoBuilder } from 'src/common/dto/dto-builder';
+import { PDFDocument } from 'pdf-lib-with-encrypt';
 
 const P12Path = join(process.cwd(), 'cert', 'certificate.p12');
+
+interface PdfBufferObj {
+  pdfBuffer: Buffer<ArrayBufferLike>;
+}
+
+interface EncryptedPdfObj extends PdfBufferObj {
+  encryptedPdfBytes?: Uint8Array<ArrayBufferLike>;
+}
 
 @Injectable()
 export class SignProcService {
@@ -53,7 +62,12 @@ export class SignProcService {
     return pdfWithPlaceholder;
   }
 
-  async signByPDF(pdfFile: string, user: User) {
+  async signByPDF(
+    pdfFile: string,
+    user: User,
+    userPassword?: string | null,
+    ownerPassword?: string | null,
+  ) {
     const pdfFilePath = join(process.cwd(), 'public', 'signPdf', pdfFile);
     if (existsSync(pdfFilePath) === false) {
       throw new BadRequestException(
@@ -65,13 +79,33 @@ export class SignProcService {
 
     // PDF에 빈 서명 필드 추가
     const pdfWithPlaceholder = this.addPlaceholderToPdf(pdfFilePath);
+    const pdfBufferObj: EncryptedPdfObj = { pdfBuffer: pdfWithPlaceholder };
+
+    // PDF 파일 암호화 설정 유효성 체크
+    if ((userPassword && !ownerPassword) || (ownerPassword && !userPassword)) {
+      throw new BadRequestException(
+        `암호화 설정은 userPassword, ownerPassword 속성이 필 수 있습니다.`,
+      );
+    }
+
+    // PDF 파일 암호화 처리
+    if (userPassword && ownerPassword) {
+      this.logger.log('pdf 파일 암호화 설정!', SignProcService.name);
+      await this.addPasswordToPdf(pdfBufferObj, userPassword, ownerPassword);
+      this.logger.log('pdf 파일 암호화 설정 완료!', SignProcService.name);
+    }
 
     const signer = new P12Signer(readFileSync(P12Path), {
       passphrase: this.configService.get<string>('P12_PASSWORD'),
     });
 
     // PDF에 전자 서명
-    const signedPdf = await signpdf.sign(pdfWithPlaceholder, signer);
+    const signedPdf = await signpdf.sign(
+      pdfBufferObj.encryptedPdfBytes
+        ? pdfBufferObj.encryptedPdfBytes
+        : pdfBufferObj.pdfBuffer,
+      signer,
+    );
     this.logger.log('pdf 파일 서명 완료!', SignProcService.name);
 
     // 서명된 PDF 저장
@@ -262,5 +296,20 @@ export class SignProcService {
       pdfVerifyDto.certValidity = false;
       return pdfVerifyDto;
     }
+  }
+
+  private async addPasswordToPdf(
+    pdfBufferObj: EncryptedPdfObj,
+    userPassword: string,
+    ownerPassword: string,
+  ): Promise<void> {
+    const pdfDoc = await PDFDocument.load(pdfBufferObj.pdfBuffer);
+    void pdfDoc.encrypt({
+      userPassword: userPassword,
+      ownerPassword: ownerPassword,
+      permissions: { modifying: false, copying: false, annotating: false },
+    });
+    const encryptedPdfBytes = await pdfDoc.save({ useObjectStreams: false });
+    pdfBufferObj.encryptedPdfBytes = encryptedPdfBytes;
   }
 }

@@ -12,6 +12,8 @@ export class SignDocumentService {
     return await this.signProcService.signByPDF(
       createSignDocumentDto.pdfFile,
       user,
+      createSignDocumentDto.userPassword,
+      createSignDocumentDto.ownerPassword,
     );
   }
 

@@ -18,4 +18,12 @@ export class CreateSignDocumentDto extends BaseDto {
   @IsNotEmpty()
   @IsString()
   pdfFile: string;
+
+  @IsOptional()
+  @IsString()
+  userPassword: string | null = null;
+
+  @IsOptional()
+  @IsString()
+  ownerPassword: string | null = null;
 }
