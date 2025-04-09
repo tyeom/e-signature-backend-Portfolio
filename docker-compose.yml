@@ -1,0 +1,30 @@
+version: '3.1'
+
+services:
+  e-signature:
+    build:
+      context: .
+      dockerfile: ./apps/e-signature/Dockerfile
+      target: development
+    command: pnpm run start:dev e-signature
+    # env_file:
+      # - ./apps/e-signature/.env
+    ports:
+      - 8002:8002
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  mailer:
+    build:
+      context: .
+      dockerfile: ./apps/mailer/Dockerfile
+      target: development
+    command: pnpm run start:dev mailer
+    # env_file:
+      # - ./apps/mailer/.env
+    ports:
+      - 3001:3001
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
