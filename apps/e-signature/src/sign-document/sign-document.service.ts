@@ -1,13 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { CreateSignDocumentDto } from './dto/create-sign-document.dto';
 import { UpdateSignDocumentDto } from './dto/update-sign-document.dto';
 import { SignProcService } from '../sign-proc/sign-proc.service';
 import { User } from '../users/entities/user.entity';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { MAILER_SERVICE } from '@app/common/const';
 import { MailTemplatesDto } from './dto/mail-templates.dto';
 import { DtoBuilder } from '../base/dto';
-import { lastValueFrom } from 'rxjs';
+import { catchError, lastValueFrom, map, tap } from 'rxjs';
 
 @Injectable()
 export class SignDocumentService {
@@ -29,13 +32,24 @@ export class SignDocumentService {
   async testSendBulkMail(testSendBulkMail: MailTemplatesDto, user: User) {
     testSendBulkMail.user = user;
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const response = await lastValueFrom(
-      this.maillerMicroservice.send({ cmd: 'sendBulkMail' }, testSendBulkMail),
-    );
+    // eslint-disable-next-line no-useless-catch
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const response = await lastValueFrom(
+        this.maillerMicroservice.send(
+          { cmd: 'sendBulkMail' },
+          testSendBulkMail,
+        ),
+      );
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return response;
+      if (!response || response === '') {
+        throw new RpcException('대량 메일 전송 처리 오류 발생');
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 
   create(createSignDocumentDto: CreateSignDocumentDto) {

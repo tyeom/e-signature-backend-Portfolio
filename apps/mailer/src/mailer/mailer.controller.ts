@@ -24,7 +24,8 @@ export class MailerController {
   @MessagePattern({
     cmd: 'sendBulkMail',
   })
-  @UseInterceptors(RpcInterceptor)
+  // @UseFilters(AllExceptionsFilter) 로 오류 캐치 대체
+  // @UseInterceptors(RpcInterceptor)
   @UseInterceptors(TransactionInterceptor)
   @UsePipes(ValidationPipe)
   async sendBulkMail(

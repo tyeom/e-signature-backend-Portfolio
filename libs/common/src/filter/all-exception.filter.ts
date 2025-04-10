@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { SshTunnel } from '../ssh-tunnel';
 import { throwError } from 'rxjs';
-import { RpcException } from '@nestjs/microservices';
+import { Ctx, RpcException } from '@nestjs/microservices';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -36,10 +36,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
           ? exception.getStatus()
           : HttpStatus.INTERNAL_SERVER_ERROR;
 
-      const message =
-        exception instanceof HttpException
-          ? exception.getResponse()
-          : 'Internal server error';
       this.logger.error(
         // e-member-access, @typescript-eslint/no-unsafe-call
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -52,7 +48,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       response.status(status).json({
         success: false,
         statusCode: status,
-        message,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        message: exception.message,
         timestamp: new Date().toISOString(),
       });
     }
@@ -93,8 +90,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception,
         AllExceptionsFilter.name,
       );
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      return throwError(() => new RpcException(exception));
+
+      return throwError(
+        () =>
+          new RpcException({
+            success: false,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+            message: exception.message,
+            timestamp: new Date().toISOString(),
+          }),
+      );
     }
   }
 }
