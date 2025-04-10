@@ -64,8 +64,8 @@ import { MailTemplatesDetail } from './mailer/entities/mail-templates-detail.ent
           ),
         }),
         new winston.transports.File({
-          dirname: join(process.cwd(), 'logs'),
-          filename: 'e-signature.log',
+          dirname: join(process.cwd(), 'apps', 'mailer', 'logs'),
+          filename: 'mailer.log',
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf(

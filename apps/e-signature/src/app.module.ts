@@ -32,7 +32,12 @@ import { SignatureModule } from './signature/signature.module';
 import { Signature } from './signature/entities/signature.entity';
 import { UserDefaultSignature } from './signature/entities/user-default-signature.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import { MAILER_SERVICE } from '@app/common/const';
+import {
+  MAILER_SERVICE,
+  MAILER_SERVICE_QUEUE_NAME,
+  NOTIFICATION_SERVICE,
+  NOTIFICATION_SERVICE_QUEUE_NAME,
+} from '@app/common/const';
 
 @Module({
   imports: [
@@ -52,9 +57,6 @@ import { MAILER_SERVICE } from '@app/common/const';
         DB_DATABASE: Joi.string().required(),
         USE_SSH_TUNNEL: Joi.boolean().required(),
         P12_PASSWORD: Joi.string().required(),
-
-        MAILER_HOST: Joi.string().required(),
-        MAILER_TCP_PORT: Joi.number().required(),
       }),
     }),
     TypeOrmModule.forRootAsync({
@@ -108,7 +110,7 @@ import { MAILER_SERVICE } from '@app/common/const';
           ),
         }),
         new winston.transports.File({
-          dirname: join(process.cwd(), 'logs'),
+          dirname: join(process.cwd(), 'apps', 'e-signature', 'logs'),
           filename: 'e-signature.log',
           format: winston.format.combine(
             winston.format.timestamp(),
@@ -136,10 +138,27 @@ import { MAILER_SERVICE } from '@app/common/const';
         {
           name: MAILER_SERVICE,
           useFactory: (configService: ConfigService) => ({
-            transport: Transport.TCP,
+            transport: Transport.RMQ,
             options: {
-              host: configService.getOrThrow('MAILER_HOST'),
-              port: configService.getOrThrow('MAILER_TCP_PORT'),
+              urls: ['amqp://rabbitmq:5672'],
+              queue: MAILER_SERVICE_QUEUE_NAME,
+              queueOptions: {
+                durable: true,
+              },
+            },
+          }),
+          inject: [ConfigService],
+        },
+        {
+          name: NOTIFICATION_SERVICE,
+          useFactory: (configService: ConfigService) => ({
+            transport: Transport.RMQ,
+            options: {
+              urls: ['amqp://rabbitmq:5672'],
+              queue: NOTIFICATION_SERVICE_QUEUE_NAME,
+              queueOptions: {
+                durable: true,
+              },
             },
           }),
           inject: [ConfigService],

@@ -15,13 +15,13 @@ RUN npm i -g pnpm
 # install package
 RUN pnpm i
 
-COPY apps/mailer apps/mailer
+COPY apps/mailer apps/notification
 COPY libs libs
 
-RUN pnpm build mailer
+RUN pnpm build notification
 
 # 커맨드 실행
-CMD [ "pnpm", "start:dev", "mailer" ]
+CMD [ "pnpm", "start:dev", "notification" ]
 
 ######## Production 환경 ########
 FROM node:alpine AS Production
@@ -43,4 +43,4 @@ RUN pnpm install --prod
 COPY --from=development /usr/src/app/dist ./dist
 COPY proto proto
 
-CMD ["node", "dist/apps/mailer/main"]
+CMD ["node", "dist/apps/notification/main"]

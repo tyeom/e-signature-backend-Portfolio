@@ -23,8 +23,21 @@ services:
     command: pnpm run start:dev mailer
     # env_file:
       # - ./apps/mailer/.env
-    ports:
-      - 3001:3001
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+
+  notification:
+    build:
+      context: .
+      dockerfile: ./apps/notification/Dockerfile
+      target: development
+    command: pnpm run start:dev notification
+    # env_file:
+      # - ./apps/notification/.env
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+
+  rabbitmq:
+    image: rabbitmq:4

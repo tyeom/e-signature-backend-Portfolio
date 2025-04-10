@@ -1,3 +1,4 @@
+######## Development 환경 ########
 FROM node:alpine AS Development
 
 WORKDIR /usr/src/app
@@ -22,7 +23,8 @@ RUN pnpm build e-signature
 # 커맨드 실행
 CMD [ "pnpm", "start:dev", "e-signature" ]
 
-FROM node:alpine AS production
+######## Production 환경 ########
+FROM node:alpine AS Production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}

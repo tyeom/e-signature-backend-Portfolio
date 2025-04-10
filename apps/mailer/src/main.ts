@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { SshTunnel } from '@app/common/ssh-tunnel';
+import { MAILER_SERVICE_QUEUE_NAME } from '@app/common/const';
 
 async function bootstrap() {
   const serverOptions = {
@@ -35,11 +36,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  const microservice = app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.TCP,
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
     options: {
-      host: '0.0.0.0',
-      port: parseInt(process.env.TCP_PORT ?? '3001'),
+      urls: ['amqp://rabbitmq:5672'],
+      queue: MAILER_SERVICE_QUEUE_NAME,
+      queueOptions: {
+        durable: true,
+      },
     },
   });
 
