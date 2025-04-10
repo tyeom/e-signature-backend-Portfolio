@@ -15,7 +15,7 @@ RUN npm i -g pnpm
 # install package
 RUN pnpm i
 
-COPY apps/mailer apps/notification
+COPY apps/notification apps/notification
 COPY libs libs
 
 RUN pnpm build notification
