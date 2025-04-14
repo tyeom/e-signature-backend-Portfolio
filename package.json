@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "build:e-signApp": "tsc -p apps/e-signature/tsconfig.app.json",
     "build:data-source": "tsc -p apps/e-signature/tsconfig.data-source.json",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",

@@ -11,7 +11,6 @@ import { MailTemplatesDto } from './dto/mail-templates.dto';
 import {
   AllExceptionsFilter,
   QueryRunner,
-  RpcInterceptor,
   TransactionInterceptor,
 } from '@app/common';
 import { QueryRunner as QR } from 'typeorm';

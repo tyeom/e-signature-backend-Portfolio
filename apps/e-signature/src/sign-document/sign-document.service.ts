@@ -1,7 +1,4 @@
-import {
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateSignDocumentDto } from './dto/create-sign-document.dto';
 import { UpdateSignDocumentDto } from './dto/update-sign-document.dto';
 import { SignProcService } from '../sign-proc/sign-proc.service';
@@ -10,7 +7,7 @@ import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { MAILER_SERVICE } from '@app/common/const';
 import { MailTemplatesDto } from './dto/mail-templates.dto';
 import { DtoBuilder } from '../base/dto';
-import { catchError, lastValueFrom, map, tap } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class SignDocumentService {

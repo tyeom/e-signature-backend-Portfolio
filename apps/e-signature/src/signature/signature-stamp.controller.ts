@@ -9,17 +9,12 @@ import {
   BadRequestException,
   Put,
   UploadedFiles,
-  Patch,
-  Query,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { RBAC } from '@app/common/decorator';
 import { Role } from '@app/common';
 import { User as UserDecorator } from '../users/decorator/user-decorator';
 import { User } from '../users/entities/user.entity';
-import { SignatureService } from './signature.service';
-import { CreateSignatureDto } from './dto/create-signature.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -29,17 +24,19 @@ import {
 import { QueryRunner } from '@app/common';
 import { QueryRunner as QR } from 'typeorm';
 import { TransactionInterceptor } from '@app/common';
-import { UpdateSignatureDto } from './dto/update-signature.dto';
+import { CreateSignatureStampDto } from './dto/create-signature-stamp.dto';
+import { UpdateSignatureStampDto } from './dto/update-signature-stamp.dto';
+import { SignatureStampService } from './signature-stamp.service';
 
-@Controller('signature')
+@Controller('signature-stamp')
 @ApiBearerAuth()
-export class SignatureController {
-  constructor(private readonly signatureService: SignatureService) {}
+export class SignatureStampController {
+  constructor(private readonly signatureStampService: SignatureStampService) {}
 
   @RBAC(Role.USER)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
-    description: '선업로드 서명 이미지 파일',
+    description: '선업로드 스탬프 이미지 파일',
     schema: {
       type: 'object',
       properties: {
@@ -50,9 +47,9 @@ export class SignatureController {
       },
     },
   })
-  @Post('signatureUpload')
+  @Post('stampUpload')
   @UseInterceptors(
-    FilesInterceptor('signatureFiles', 5, {
+    FilesInterceptor('stampFiles', 5, {
       limits: {
         fileSize: 20000000,
       },
@@ -68,7 +65,7 @@ export class SignatureController {
       },
     }),
   )
-  signatureUpload(@UploadedFiles() attachedFiles: Express.Multer.File[]) {
+  stampUpload(@UploadedFiles() attachedFiles: Express.Multer.File[]) {
     const uploadFiles = attachedFiles.map((file) => ({
       fileName: file.filename,
     }));
@@ -80,12 +77,12 @@ export class SignatureController {
   @RBAC(Role.USER)
   @UseInterceptors(TransactionInterceptor)
   async create(
-    @Body() createSignatureDto: CreateSignatureDto,
+    @Body() createSignatureStampDto: CreateSignatureStampDto,
     @UserDecorator() user: User,
     @QueryRunner() queryRunner: QR,
   ) {
-    return await this.signatureService.create(
-      createSignatureDto,
+    return await this.signatureStampService.create(
+      createSignatureStampDto,
       user,
       queryRunner,
     );
@@ -95,72 +92,33 @@ export class SignatureController {
   @RBAC(Role.USER)
   @UseInterceptors(TransactionInterceptor)
   async findAll(@UserDecorator() user: User) {
-    return await this.signatureService.findAll(user);
-  }
-
-  /**
-   * Signature와 Stamp 전체 데이터 조회
-   * @param user 요청된 사용자 정보
-   * @returns Signature와 Stamp 전체 데이터
-   */
-  @Get('all')
-  @RBAC(Role.USER)
-  @UseInterceptors(TransactionInterceptor)
-  async findAllBySignature_Stamp(@UserDecorator() user: User) {
-    return await this.signatureService.findAllBySignature_Stamp(user);
+    return await this.signatureStampService.findAll(user);
   }
 
   @Delete(':id')
   @RBAC(Role.USER)
   @ApiResponse({
     status: 200,
-    description: 'Signature 삭제 완료',
+    description: 'Stamp 삭제 완료',
   })
   @UseInterceptors(TransactionInterceptor)
-  async removeSignature(
+  async removeSignatureStamp(
     @Param('id') id: number,
     @UserDecorator() user: User,
     @QueryRunner() queryRunner: QR,
   ) {
-    return this.signatureService.removeSignature(+id, user, queryRunner);
+    return this.signatureStampService.removeSignatureStamp(+id, user, queryRunner);
   }
 
   @Put(':id')
   @RBAC(Role.USER)
   @UseInterceptors(TransactionInterceptor)
-  async updateSignature(
+  async updateSignatureStamp(
     @Param('id') id: number,
-    @Body() body: UpdateSignatureDto,
+    @Body() body: UpdateSignatureStampDto,
     @UserDecorator() user: User,
     @QueryRunner() queryRunner: QR,
   ) {
-    return this.signatureService.updateSignature(+id, body, user, queryRunner);
-  }
-
-  @Patch('defaultSignature')
-  @RBAC(Role.USER)
-  @ApiResponse({
-    status: 200,
-    description: '기본 Signature 적용 완료, 적용한 Signature 정보 응답',
-  })
-  @UseInterceptors(TransactionInterceptor)
-  async updateDefaultSignature(
-    @Query('id', ParseIntPipe) id: number,
-    @Query('type') type: string,
-    @UserDecorator() user: User,
-    @QueryRunner() queryRunner: QR,
-  ) {
-    return this.signatureService.updateDefaultSignature(
-      id,
-      type,
-      user,
-      queryRunner,
-    );
-  }
-
-  @Get('defaultSignature')
-  @RBAC(Role.USER)
-  async getDefaultSignature(@UserDecorator() user: User) {
-    return this.signatureService.getDefaultSignature(user);
+    return this.signatureStampService.updateSignatureStamp(+id, body, user, queryRunner);
   }
 }

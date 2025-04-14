@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsDefined } from 'class-validator';
 
 export class UpdateSettingDto {
@@ -6,6 +7,10 @@ export class UpdateSettingDto {
    */
   @IsDefined()
   @IsBoolean()
+  @ApiProperty({
+    description: '서명이 시작됨 on/off [true or false]',
+    example: 'true',
+  })
   signingStarted: boolean;
 
   /**
@@ -13,6 +18,10 @@ export class UpdateSettingDto {
    */
   @IsDefined()
   @IsBoolean()
+  @ApiProperty({
+    description: '서명이 완료됨 on/off [true or false]',
+    example: 'true',
+  })
   signingComplete: boolean;
 
   /**
@@ -20,6 +29,10 @@ export class UpdateSettingDto {
    */
   @IsDefined()
   @IsBoolean()
+  @ApiProperty({
+    description: '서명자가 서명을 거절함 on/off [true or false]',
+    example: 'true',
+  })
   declineSignatures: boolean;
 
   /**
@@ -27,6 +40,10 @@ export class UpdateSettingDto {
    */
   @IsDefined()
   @IsBoolean()
+  @ApiProperty({
+    description: '서명자가 서명을 취소함 on/off [true or false]',
+    example: 'true',
+  })
   canceledSignatures: boolean;
 
   /**
@@ -34,6 +51,10 @@ export class UpdateSettingDto {
    */
   @IsDefined()
   @IsBoolean()
+  @ApiProperty({
+    description: '서명 요청 취소함 on/off [true or false]',
+    example: 'true',
+  })
   canceledSignatureReq: boolean;
 
   /**
@@ -41,6 +62,10 @@ export class UpdateSettingDto {
    */
   @IsDefined()
   @IsBoolean()
+  @ApiProperty({
+    description: '서명 요청할 차례 on/off [true or false]',
+    example: 'true',
+  })
   turnForSignature: boolean;
 
   /**
@@ -48,5 +73,9 @@ export class UpdateSettingDto {
    */
   @IsDefined()
   @IsBoolean()
+  @ApiProperty({
+    description: '모든 서명 요청 알림 끄기 on/off [true or false]',
+    example: 'true',
+  })
   disableNotiForSignatureReq: boolean;
 }

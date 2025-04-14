@@ -1,3 +1,6 @@
+/**
+ * PDF 파일 서명 위.변조 검증 결과
+ */
 export class PDFVerifyDto {
   /**
    * PDF 파일 위.변조 여부

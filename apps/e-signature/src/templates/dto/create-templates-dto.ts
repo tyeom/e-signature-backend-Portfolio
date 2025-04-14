@@ -11,6 +11,7 @@ import { CreateRequesteeDto } from './create-requestee-dto';
 import { Type } from 'class-transformer';
 import { OmitType } from '@nestjs/mapped-types';
 import { BaseDto } from '../../base/dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 // BaseDto 모든 속성
 // const allBaseDtoProperties = Object.keys(new BaseDto()) as (keyof BaseDto)[];
@@ -24,6 +25,10 @@ export class CreateTemplatesDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsString()
+  @ApiProperty({
+    description: '프로젝트 이름',
+    example: '',
+  })
   projectName: string;
 
   /**
@@ -31,6 +36,10 @@ export class CreateTemplatesDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsString()
+  @ApiProperty({
+    description: '문서 이름',
+    example: '',
+  })
   documentName: string;
 
   /**
@@ -39,6 +48,10 @@ export class CreateTemplatesDto extends BaseDto {
   @IsNotEmpty()
   @IsDate()
   @Type(() => Date)
+  @ApiProperty({
+    description: '만료일',
+    example: '',
+  })
   expireDate: Date;
 
   /**
@@ -46,6 +59,10 @@ export class CreateTemplatesDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '나에게 서명 요청하기',
+    example: 'false',
+  })
   requestSignatureForMe: boolean;
 
   /**
@@ -53,6 +70,10 @@ export class CreateTemplatesDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '예약 전송',
+    example: 'false',
+  })
   scheduledSend: boolean;
 
   /**
@@ -61,6 +82,10 @@ export class CreateTemplatesDto extends BaseDto {
   @IsOptional()
   @IsDate()
   @Type(() => Date)
+  @ApiProperty({
+    description: '예약 전송 날짜',
+    example: '',
+  })
   scheduledSendDate?: Date;
 
   /**
@@ -68,6 +93,10 @@ export class CreateTemplatesDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '서명자가 문서를 편집 가능 여부',
+    example: 'false',
+  })
   allowDocumentEditing: boolean;
 
   /**
@@ -75,6 +104,10 @@ export class CreateTemplatesDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '서명 순서 강제 여부',
+    example: 'true',
+  })
   mustSignInOrder: boolean;
 
   /**
@@ -82,6 +115,11 @@ export class CreateTemplatesDto extends BaseDto {
    */
   @IsOptional()
   @IsArray()
+  @ApiProperty({
+    description: '참여자 User ids',
+    isArray: true,
+    example: '[1, 2, 3]',
+  })
   teammates?: number[];
 
   /**
@@ -91,5 +129,11 @@ export class CreateTemplatesDto extends BaseDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CreateRequesteeDto)
+  @ApiProperty({
+    description: '요청자 리스트',
+    type: () => CreateRequesteeDto,
+    isArray: true,
+    example: '[]',
+  })
   requestee?: CreateRequesteeDto[];
 }

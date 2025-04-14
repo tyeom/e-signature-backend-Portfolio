@@ -8,10 +8,13 @@ import { join } from 'path';
 import { v4 } from 'uuid';
 import { Signature } from './entities/signature.entity';
 import { UserDefaultSignature } from './entities/user-default-signature.entity';
+import { SignatureStamp } from './entities/signature-stamp.entity';
+import { SignatureStampController } from './signature-stamp.controller';
+import { SignatureStampService } from './signature-stamp.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Signature, UserDefaultSignature]),
+    TypeOrmModule.forFeature([Signature, SignatureStamp, UserDefaultSignature]),
     MulterModule.register({
       storage: diskStorage({
         // process.cwd() + '/public' + '/temp'
@@ -30,7 +33,7 @@ import { UserDefaultSignature } from './entities/user-default-signature.entity';
       }),
     }),
   ],
-  controllers: [SignatureController],
-  providers: [SignatureService],
+  controllers: [SignatureController, SignatureStampController],
+  providers: [SignatureService, SignatureStampService],
 })
 export class SignatureModule {}

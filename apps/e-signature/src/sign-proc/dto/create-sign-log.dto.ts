@@ -1,5 +1,8 @@
 import { BaseDto } from "../../base/dto";
 
+/**
+ * PDF 파일 서명 기록 생성
+ */
 export class CreateSignLogDto extends BaseDto {
   /**
    * 서명된 pdf 파일명

@@ -58,6 +58,7 @@ async function bootstrap() {
       },
     }),
   );
+  await app.init();
   await app.listen(PORT);
   console.log(`http://localhost:${PORT}`);
 }

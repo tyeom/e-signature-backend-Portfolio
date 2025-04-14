@@ -1,7 +1,12 @@
 version: '3.1'
 
 services:
+  rabbitmq:
+    image: rabbitmq:4
+
   e-signature:
+    depends_on:
+      - rabbitmq
     build:
       context: .
       dockerfile: ./apps/e-signature/Dockerfile
@@ -16,6 +21,8 @@ services:
       - /usr/src/app/node_modules
 
   mailer:
+    depends_on:
+      - rabbitmq
     build:
       context: .
       dockerfile: ./apps/mailer/Dockerfile
@@ -28,6 +35,8 @@ services:
       - /usr/src/app/node_modules
 
   notification:
+    depends_on:
+      - rabbitmq
     build:
       context: .
       dockerfile: ./apps/notification/Dockerfile
@@ -38,6 +47,3 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-
-  rabbitmq:
-    image: rabbitmq:4

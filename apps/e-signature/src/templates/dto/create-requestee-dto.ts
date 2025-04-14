@@ -11,6 +11,7 @@ import {
 import { Type } from 'class-transformer';
 import { OmitType } from '@nestjs/mapped-types';
 import { BaseDto } from '../../base/dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 // BaseDto 모든 속성
 // const allBaseDtoProperties = Object.keys(new BaseDto()) as (keyof BaseDto)[];
@@ -26,6 +27,10 @@ export class CreateRequesteeDto extends BaseDto {
   @IsNotEmpty()
   @IsNumber()
   @Type(() => Number)
+  @ApiProperty({
+    description: '서명자 서명 순서',
+    example: '1',
+  })
   order: number;
 
   /**
@@ -33,6 +38,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsString()
+  @ApiProperty({
+    description: '요청자 이름',
+    example: 'olobby',
+  })
   name: string;
 
   /**
@@ -40,6 +49,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsOptional()
   @IsEmail()
+  @ApiProperty({
+    description: '이메일',
+    example: 'user@olobby.co.kr',
+  })
   email?: string;
 
   /**
@@ -47,6 +60,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsOptional()
   @IsString()
+  @ApiProperty({
+    description: 'SMS 번호',
+    example: '01012344321',
+  })
   sms?: string;
 
   /**
@@ -54,6 +71,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsIn(['email', 'sms'])
+  @ApiProperty({
+    description: '이메일 또는 SMS 사용 여부 [email, sms]',
+    example: 'email',
+  })
   notificationMethod: 'email' | 'sms';
 
   /**
@@ -61,6 +82,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsIn(['en', 'ko', 'jp', 'cn'])
+  @ApiProperty({
+    description: '알림 언어 [en, ko, jp, cn]',
+    example: 'ko',
+  })
   notificationLanguage: 'en' | 'ko' | 'jp' | 'cn';
 
   /**
@@ -68,6 +93,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsOptional()
   @IsString()
+  @ApiProperty({
+    description: '보안 코드',
+    example: '',
+  })
   securityCode?: string;
 
   /**
@@ -75,6 +104,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '보안 코드 사용 여부',
+    example: 'true',
+  })
   useSecurityCode: boolean;
 
   /**
@@ -82,6 +115,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsOptional()
   @IsString()
+  @ApiProperty({
+    description: '휴대폰 인증 번호',
+    example: '01012344321',
+  })
   phone?: string;
 
   /**
@@ -89,6 +126,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '휴대폰 인증 여부',
+    example: 'true',
+  })
   useCellphoneAuth: boolean;
 
   /**
@@ -96,6 +137,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '국가별 인증 필요 여부',
+    example: 'true',
+  })
   countrySpecificCert: boolean;
 
   /**
@@ -103,6 +148,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '카카오톡 인증 여부',
+    example: 'true',
+  })
   kakaoAuth: boolean;
 
   /**
@@ -110,6 +159,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '공인 인증 여부',
+    example: 'true',
+  })
   publicAuth: boolean;
 
   /**
@@ -117,6 +170,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsOptional()
   @IsString()
+  @ApiProperty({
+    description: '메세지',
+    example: '',
+  })
   message?: string;
 
   /**
@@ -124,6 +181,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '메세지 사용 여부',
+    example: 'true',
+  })
   useMessage: boolean;
 
   /**
@@ -131,6 +192,10 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '파일 첨부 사용 여부',
+    example: 'true',
+  })
   useAttachFile: boolean;
 
   /**
@@ -138,6 +203,11 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsOptional()
   @IsArray()
+  @ApiProperty({
+    description: '첨부 파일',
+    example: '[abc.pdf, abc2.pdf]',
+    isArray: true,
+  })
   attachedFiles?: string[];
 
   /**
@@ -145,5 +215,9 @@ export class CreateRequesteeDto extends BaseDto {
    */
   @IsNotEmpty()
   @IsBoolean()
+  @ApiProperty({
+    description: '모든 요청자에게 동일한 옵션 적용 여부',
+    example: 'true',
+  })
   applySameOptions: boolean;
 }

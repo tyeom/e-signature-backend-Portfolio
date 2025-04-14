@@ -3,18 +3,18 @@ import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
 @Entity({ schema: 'esign' })
-export class Signature extends BaseEntity {
+export class SignatureStamp extends BaseEntity {
   @Column()
-  fullName: string;
+  stampName: string;
 
   @Column()
-  initials: string;
+  stampType: string;
 
   @Column('text', { array: true, nullable: true })
-  signatureImgs?: string[];
+  stampImgs?: string[];
 
-  @Column('text', { array: true, nullable: true })
-  initialsImgs?: string[];
+  @Column({ nullable: true })
+  stampHeight?: string;
 
   /**
    * 이용 가능 맴버 (UserMaster)
