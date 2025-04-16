@@ -10,5 +10,6 @@ import { CommonModule } from '../common/common.module';
   imports: [TypeOrmModule.forFeature([RequestESign, Requestee]), CommonModule],
   controllers: [TemplatesController],
   providers: [TemplatesService],
+  exports: [TemplatesService],
 })
 export class TemplatesModule {}

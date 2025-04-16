@@ -41,6 +41,7 @@ export class TemplatesService {
       for (const [__, value2] of value1.attachedFiles.entries()) {
         if (value2) {
           if (this.configService.get<boolean>('USE_S3_STORAGE') === false) {
+            // temp 폴더 파일 체크
             if (existsSync(join(process.cwd(), tempFolder, value2)) === false) {
               throw new BadRequestException(
                 `선업로드되지 않은 파일 입니다. - ${value2}`,
@@ -333,7 +334,7 @@ export class TemplatesService {
       oldRequestESign.teammates = teammates;
     }
     // 06. RequestESign 업데이트 반영
-    this.requestESignRepository.save(oldRequestESign);
+    await this.requestESignRepository.save(oldRequestESign);
 
     // 07. Requestee 새로 추가
     if (updateTemplatesDto.requestee) {
@@ -360,7 +361,6 @@ export class TemplatesService {
 
     return await qr.manager.findOne(RequestESign, {
       where: {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         id: requestESignId,
       },
       relations: ['teammates', 'requestees'],

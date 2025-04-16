@@ -8,14 +8,17 @@ import {
   VersionColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { Exclude } from 'class-transformer';
 
 export class BaseEntity {
   @PrimaryGeneratedColumn({ name: 'Id' })
   id: number;
 
+  @Exclude()
   @Column({ name: 'SaveStatus' })
   saveStatus: string;
 
+  @Exclude()
   @Column({ name: 'ApprovalStatus' })
   approvalStatus: string;
 
@@ -25,6 +28,7 @@ export class BaseEntity {
   @Column({ name: 'IsDeleted', nullable: true })
   isDeleted: boolean;
 
+  @Exclude()
   @Column({ name: 'EntryOrigin' })
   entryOrigin: string;
 

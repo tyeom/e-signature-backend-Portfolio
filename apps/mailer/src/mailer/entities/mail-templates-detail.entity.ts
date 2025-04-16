@@ -66,4 +66,18 @@ export class MailTemplatesDetail extends BaseEntity {
    */
   @Column({ nullable: true })
   passwordHint?: string;
+
+  /**
+   * 상태
+   */
+  @Column({ nullable: true })
+  status?:
+    | '준비중'
+    | '발송중'
+    | '발송 완료'
+    | '서명중'
+    | '서명 완료'
+    | '서명 거부'
+    | '만료됨'
+    | '알 수 없음';
 }

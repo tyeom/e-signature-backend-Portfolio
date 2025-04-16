@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -22,6 +23,8 @@ import { GetRequesteeDto } from './dto/get-requestee-dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('templates')
+// class-transformer의 @Exclude()등 어노테이션 적용
+@UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}

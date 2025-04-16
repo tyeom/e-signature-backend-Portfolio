@@ -1,19 +1,19 @@
-import { Exclude } from 'class-transformer';
+import { ApiHideProperty } from '@nestjs/swagger';
 import { User } from '../../entities/user.entity';
 
 export abstract class BaseDto {
-  @Exclude()
+  @ApiHideProperty()
   saveStatus: string;
-  @Exclude()
+  @ApiHideProperty()
   approvalStatus: string;
-  @Exclude()
+  @ApiHideProperty()
   isActive: boolean;
-  @Exclude()
+  @ApiHideProperty()
   isDeleted: boolean;
-  @Exclude()
+  @ApiHideProperty()
   entryOrigin: string;
-  @Exclude()
+  @ApiHideProperty()
   createdBy: User;
-  @Exclude()
+  @ApiHideProperty()
   modifiedBy: User;
 }

@@ -65,8 +65,8 @@ export class SignProcService {
   async signByPDF(
     pdfFile: string,
     user: User,
-    userPassword?: string | null,
-    ownerPassword?: string | null,
+    pdfUserPassword?: string | null,
+    pdfOwnerPassword?: string | null,
   ) {
     const pdfFilePath = join(process.cwd(), 'public', 'signPdf', pdfFile);
     if (existsSync(pdfFilePath) === false) {
@@ -82,16 +82,23 @@ export class SignProcService {
     const pdfBufferObj: EncryptedPdfObj = { pdfBuffer: pdfWithPlaceholder };
 
     // PDF 파일 암호화 설정 유효성 체크
-    if ((userPassword && !ownerPassword) || (ownerPassword && !userPassword)) {
+    if (
+      (pdfUserPassword && !pdfOwnerPassword) ||
+      (pdfOwnerPassword && !pdfUserPassword)
+    ) {
       throw new BadRequestException(
         `암호화 설정은 userPassword, ownerPassword 속성이 필 수 있습니다.`,
       );
     }
 
     // PDF 파일 암호화 처리
-    if (userPassword && ownerPassword) {
+    if (pdfUserPassword && pdfOwnerPassword) {
       this.logger.log('pdf 파일 암호화 설정!', SignProcService.name);
-      await this.addPasswordToPdf(pdfBufferObj, userPassword, ownerPassword);
+      await this.addPasswordToPdf(
+        pdfBufferObj,
+        pdfUserPassword,
+        pdfOwnerPassword,
+      );
       this.logger.log('pdf 파일 암호화 설정 완료!', SignProcService.name);
     }
 

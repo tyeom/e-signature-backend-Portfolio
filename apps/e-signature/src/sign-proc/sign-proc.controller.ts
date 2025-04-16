@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ClassSerializerInterceptor,
   Controller,
   Post,
   UploadedFile,
@@ -20,6 +21,8 @@ import {
 } from '@nestjs/swagger';
 
 @Controller('sign-proc')
+// class-transformer의 @Exclude()등 어노테이션 적용
+@UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class SignProcController {
   constructor(readonly signProcService: SignProcService) {}

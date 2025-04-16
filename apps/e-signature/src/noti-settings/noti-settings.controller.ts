@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Put } from '@nestjs/common';
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  Put,
+  UseInterceptors,
+} from '@nestjs/common';
 import { NotiSettingsService } from './noti-settings.service';
 import { Role } from '@app/common';
 import { User as UserDecorator } from '../users/decorator/user-decorator';
@@ -8,6 +15,8 @@ import { User } from '../users/entities/user.entity';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 
 @Controller('settings')
+// class-transformer의 @Exclude()등 어노테이션 적용
+@UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class NotiSettingsController {
   constructor(private readonly notiSettingsService: NotiSettingsService) {}

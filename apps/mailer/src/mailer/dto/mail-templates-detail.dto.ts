@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { BaseDto } from '../../base/dto';
 
 export class MailTemplatesDetailDto extends BaseDto {
@@ -36,7 +36,7 @@ export class MailTemplatesDetailDto extends BaseDto {
    * 사용자 언어
    */
   @IsNotEmpty()
-  @IsString()
+  @IsIn(['en', 'ko'])
   userLang: 'en' | 'ko';
 
   /**

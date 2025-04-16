@@ -1,4 +1,3 @@
-import { User } from '../../users/entities/user.entity';
 import {
   Entity,
   Column,
@@ -10,6 +9,7 @@ import {
 } from 'typeorm';
 import { Requestee } from './requestee.entity';
 import { BaseEntity } from '../../base/entities';
+import { User } from '../../users/entities/user.entity';
 
 /**
  * 서명 요청
@@ -113,8 +113,14 @@ export class RequestESign extends BaseEntity {
   status: string;
 
   /**
-   * 파일 이름
+   * 파일 이름 (배열 형태)
    */
   @Column('text', { array: true, nullable: true })
-  fileName: string[];
+  attachedFiles: string[];
+
+  /**
+   * 첨부 파일 위치 구분
+   */
+  @Column()
+  attachedFileType: string;
 }

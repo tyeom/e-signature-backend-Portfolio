@@ -1,5 +1,5 @@
 /// * typeorm migration:create .apps/e-signature/src/database/migrations/init
-/// 01. build:e-signAll  [apps/e-signature의 모든 entity -> js 빌드 목적]
+/// 01. tsc  [apps/**/의 모든 entity -> js 빌드 목적]
 /// 02. build:data-source  [database/data-source.ts -> js 빌드 목적]
 /// 03. typeorm migration:generate ./apps/e-signature/src/database/migrations/init -d ./dist/database/data-source.js  [정의된 엔티티 파일 기준으로 SQL 코드 생성 목적]
 /// ★★★ [중요!!!] 생성된 마이그레이션 파일에서 "web"."UserMaster" 테이블 관련 코드 모두 수동 제거 ★★★

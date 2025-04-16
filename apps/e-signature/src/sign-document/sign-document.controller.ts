@@ -1,15 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  UseInterceptors,
+  Put,
+  ClassSerializerInterceptor,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { SignDocumentService } from './sign-document.service';
 import { CreateSignDocumentDto } from './dto/create-sign-document.dto';
 import { UpdateSignDocumentDto } from './dto/update-sign-document.dto';
 import { User as UserDecorator } from '../users/decorator/user-decorator';
 import { RBAC } from '@app/common/decorator';
-import { Role } from '@app/common';
+import { QueryRunner, Role, TransactionInterceptor } from '@app/common';
+import { QueryRunner as QR } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { MailTemplatesDto } from './dto/mail-templates.dto';
 
 @Controller('sign-document')
+// class-transformer의 @Exclude()등 어노테이션 적용
+@UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class SignDocumentController {
   constructor(private readonly signDocumentService: SignDocumentService) {}
@@ -39,30 +53,51 @@ export class SignDocumentController {
     );
   }
 
-  @Post()
+  @Post('create')
   @RBAC(Role.USER)
-  create(@Body() createSignDocumentDto: CreateSignDocumentDto) {
-    return this.signDocumentService.create(createSignDocumentDto);
+  @UseInterceptors(TransactionInterceptor)
+  createSignDocument(
+    @Body() body: CreateSignDocumentDto,
+    @UserDecorator() user: User,
+    @QueryRunner() queryRunner: QR,
+  ) {
+    return this.signDocumentService.createSignDocument(body, user, queryRunner);
   }
 
-  @Get()
+  @Put(':id')
   @RBAC(Role.USER)
-  findAll() {
-    return this.signDocumentService.findAll();
+  @UseInterceptors(TransactionInterceptor)
+  async updateSignDocument(
+    @Param('id') id: number,
+    @Body() body: UpdateSignDocumentDto,
+    @UserDecorator() user: User,
+    @QueryRunner() queryRunner: QR,
+  ) {
+    return await this.signDocumentService.updateSignDocument(
+      id,
+      body,
+      user,
+      queryRunner,
+    );
   }
 
   @Get(':id')
   @RBAC(Role.USER)
-  findOne(@Param('id') id: string) {
-    return this.signDocumentService.findOne(+id);
+  @UseInterceptors(TransactionInterceptor)
+  async getSignDocument(@Param('id') id: number, @UserDecorator() user: User) {
+    return await this.signDocumentService.findOneById(id, user);
   }
 
-  @Patch(':id')
+  @Get()
   @RBAC(Role.USER)
-  update(
-    @Param('id') id: string,
-    @Body() updateSignDocumentDto: UpdateSignDocumentDto,
+  @UseInterceptors(TransactionInterceptor)
+  async findOneByTemplatesId(
+    @Query('templateId', ParseIntPipe) templateId: number,
+    @UserDecorator() user: User,
   ) {
-    return this.signDocumentService.update(+id, updateSignDocumentDto);
+    return await this.signDocumentService.findOneByTemplatesId(
+      templateId,
+      user,
+    );
   }
 }

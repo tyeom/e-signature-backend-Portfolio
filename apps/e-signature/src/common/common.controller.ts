@@ -3,9 +3,10 @@ import {
   Controller,
   Post,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { RBAC } from '@app/common/decorator';
 import { Role } from '@app/common';
 import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
@@ -27,14 +28,17 @@ export class CommonController {
       },
     },
   })
-  @Post('fileUpload')
+  @Post('filesUpload')
   @UseInterceptors(
-    FileInterceptor('attachedFile', {
+    FilesInterceptor('attachedFiles', 10, {
       limits: {
         fileSize: 20000000,
       },
       fileFilter(req, file, callback) {
-        if (file.mimetype.includes('officedocument') == false) {
+        if (
+          file.mimetype.includes('officedocument') == false &&
+          file.mimetype.includes('pdf') == false
+        ) {
           return callback(
             new BadRequestException('지원하지 않은 파일 형식 입니다.'),
             false,
@@ -45,9 +49,11 @@ export class CommonController {
       },
     }),
   )
-  fileUpload(@UploadedFile() attachedFile: Express.Multer.File) {
-    return {
-      fileName: attachedFile.filename,
-    };
+  fileUpload(@UploadedFiles() attachedFiles: Express.Multer.File[]) {
+    const uploadFiles = attachedFiles.map((file) => ({
+      fileName: file.filename,
+    }));
+
+    return uploadFiles;
   }
 }

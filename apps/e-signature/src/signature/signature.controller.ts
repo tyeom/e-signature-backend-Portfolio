@@ -12,6 +12,7 @@ import {
   Patch,
   Query,
   ParseIntPipe,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { RBAC } from '@app/common/decorator';
@@ -32,6 +33,8 @@ import { TransactionInterceptor } from '@app/common';
 import { UpdateSignatureDto } from './dto/update-signature.dto';
 
 @Controller('signature')
+// class-transformer의 @Exclude()등 어노테이션 적용
+@UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class SignatureController {
   constructor(private readonly signatureService: SignatureService) {}
@@ -57,7 +60,7 @@ export class SignatureController {
         fileSize: 20000000,
       },
       fileFilter(req, file, callback) {
-        if (file.mimetype.includes('image') == false) {
+        if (file.mimetype.includes('png') == false) {
           return callback(
             new BadRequestException('지원하지 않은 파일 형식 입니다.'),
             false,
@@ -68,7 +71,12 @@ export class SignatureController {
       },
     }),
   )
-  signatureUpload(@UploadedFiles() attachedFiles: Express.Multer.File[]) {
+  async signatureUpload(@UploadedFiles() attachedFiles: Express.Multer.File[]) {
+    // 이미지 배경 제거 처리
+    await this.signatureService.rembgProc(
+      attachedFiles.map((file) => file.filename),
+    );
+
     const uploadFiles = attachedFiles.map((file) => ({
       fileName: file.filename,
     }));

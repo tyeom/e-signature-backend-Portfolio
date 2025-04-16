@@ -1,10 +1,4 @@
-import {
-  IsIn,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { BaseDto } from '../../base/dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';

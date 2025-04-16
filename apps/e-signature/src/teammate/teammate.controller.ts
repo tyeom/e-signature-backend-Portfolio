@@ -1,4 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Controller,
+  Get,
+  UseInterceptors,
+} from '@nestjs/common';
 import { TeammateService } from './teammate.service';
 import { Public } from '@app/common/decorator';
 import { User as UserDecorator } from '../users/decorator/user-decorator';
@@ -9,6 +14,8 @@ import { Role } from '@app/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('teammate')
+// class-transformer의 @Exclude()등 어노테이션 적용
+@UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class TeammateController {
   constructor(private readonly teammateService: TeammateService) {}

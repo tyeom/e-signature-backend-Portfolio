@@ -39,6 +39,7 @@ import {
   NOTIFICATION_SERVICE_QUEUE_NAME,
 } from '@app/common/const';
 import { SignatureStamp } from './signature/entities/signature-stamp.entity';
+import { SignDocument } from './sign-document/entities/sign-document.entity';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { SignatureStamp } from './signature/entities/signature-stamp.entity';
             Signature,
             SignatureStamp,
             UserDefaultSignature,
+            SignDocument,
           ],
           logging: true,
           logger: 'advanced-console',

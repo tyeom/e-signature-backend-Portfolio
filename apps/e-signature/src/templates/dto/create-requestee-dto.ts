@@ -205,7 +205,7 @@ export class CreateRequesteeDto extends BaseDto {
   @IsArray()
   @ApiProperty({
     description: '첨부 파일',
-    example: '[abc.pdf, abc2.pdf]',
+    example: '["abc.pdf", "abc2.pdf"]',
     isArray: true,
   })
   attachedFiles?: string[];

@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  LoggerService,
+} from '@nestjs/common';
 import { CreateSignatureDto } from './dto/create-signature.dto';
 import { User } from '../users/entities/user.entity';
 import { In, QueryRunner, Repository } from 'typeorm';
@@ -11,10 +16,15 @@ import { UpdateUserDefaultSignatureDto } from './dto/update-user-default-signatu
 import { DtoBuilder } from '../base/dto';
 import { UpdateSignatureDto } from './dto/update-signature.dto';
 import { SignatureStamp } from './entities/signature-stamp.entity';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { readFile, writeFile } from 'fs/promises';
+import { removeBackground } from '@imgly/background-removal-node';
 
 @Injectable()
 export class SignatureService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
     @InjectRepository(Signature)
     private readonly signatureRepository: Repository<Signature>,
     @InjectRepository(SignatureStamp)
@@ -22,6 +32,45 @@ export class SignatureService {
     @InjectRepository(UserDefaultSignature)
     private readonly userDefaultSignatureRepository: Repository<UserDefaultSignature>,
   ) {}
+
+  /**
+   * 이미지 배경 제거 처리
+   * @param imageFileName 배경 제거할 이미지 파일명 배열
+   */
+  async rembgProc(imageFileName: string[]): Promise<void> {
+    // const config = {
+    //   publicPath: string; // The public path used for model and wasm files. Default: '`file://${path.resolve(`node_modules/${pkg.name}/dist/`)}/`.
+    //   debug: bool; // enable or disable useful console.log outputs
+    //   model: 'small' | 'medium'; // The model to use. (Default "medium")
+    //   output: {
+    //     format: 'image/png' | 'image/jpeg' | 'image/webp' | 'image/x-rgba8'; // The output format. (Default "image/png")
+    //     quality: number; // The quality. (Default: 0.8)
+    //     type: 'foreground' | 'background' | 'mask'; // The output type. (Default "foreground")
+    //   };
+    // };
+
+    const promises = imageFileName.map(async (imgFileName) => {
+      const filePath = join(process.cwd(), 'public', 'signature', imgFileName);
+      const imageBuffer = await readFile(filePath);
+      const blob = new Blob([imageBuffer], { type: 'image/png' });
+      const removedBackground = await removeBackground(blob);
+      const buffer = Buffer.from(await removedBackground.arrayBuffer());
+      await writeFile(filePath, Buffer.from(buffer));
+    });
+
+    try {
+      const results = await Promise.all(promises);
+      this.logger.log(
+        `이미지 배경 제거 처리 완료 => ${results}`,
+        SignatureService.name,
+      );
+    } catch (error) {
+      this.logger.error(
+        `이미지 배경 제거 처리 오류 => ${error}`,
+        SignatureService.name,
+      );
+    }
+  }
 
   async create(
     createSignatureDto: CreateSignatureDto,

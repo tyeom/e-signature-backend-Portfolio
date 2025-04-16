@@ -9,6 +9,7 @@ import {
   BadRequestException,
   Put,
   UploadedFiles,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { RBAC } from '@app/common/decorator';
@@ -29,6 +30,8 @@ import { UpdateSignatureStampDto } from './dto/update-signature-stamp.dto';
 import { SignatureStampService } from './signature-stamp.service';
 
 @Controller('signature-stamp')
+// class-transformer의 @Exclude()등 어노테이션 적용
+@UseInterceptors(ClassSerializerInterceptor)
 @ApiBearerAuth()
 export class SignatureStampController {
   constructor(private readonly signatureStampService: SignatureStampService) {}
@@ -107,7 +110,11 @@ export class SignatureStampController {
     @UserDecorator() user: User,
     @QueryRunner() queryRunner: QR,
   ) {
-    return this.signatureStampService.removeSignatureStamp(+id, user, queryRunner);
+    return this.signatureStampService.removeSignatureStamp(
+      +id,
+      user,
+      queryRunner,
+    );
   }
 
   @Put(':id')
@@ -119,6 +126,11 @@ export class SignatureStampController {
     @UserDecorator() user: User,
     @QueryRunner() queryRunner: QR,
   ) {
-    return this.signatureStampService.updateSignatureStamp(+id, body, user, queryRunner);
+    return this.signatureStampService.updateSignatureStamp(
+      +id,
+      body,
+      user,
+      queryRunner,
+    );
   }
 }

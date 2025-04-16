@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -136,4 +137,24 @@ export class CreateTemplatesDto extends BaseDto {
     example: '[]',
   })
   requestee?: CreateRequesteeDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ApiProperty({
+    description: '선 업로드된 파일 이름',
+    example: '["abc.pdf", "abc2.pdf"]',
+    isArray: true,
+  })
+  attachedFiles?: string[];
+
+  /**
+   * 첨부 파일 위치 구분
+   */
+  @IsNotEmpty()
+  @IsIn(['e-sign', 'cloud'])
+  @ApiProperty({
+    description: '첨부 파일 위치 구분 [e-sign, cloud]',
+    example: 'e-sign',
+  })
+  attachedFileType: 'e-sign' | 'cloud';
 }
