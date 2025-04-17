@@ -61,6 +61,7 @@ export class SignatureService {
     try {
       const results = await Promise.all(promises);
       this.logger.log(
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         `이미지 배경 제거 처리 완료 => ${results}`,
         SignatureService.name,
       );

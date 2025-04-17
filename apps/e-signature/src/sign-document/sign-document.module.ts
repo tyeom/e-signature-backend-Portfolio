@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { SignDocumentService } from './sign-document.service';
 import { SignDocumentController } from './sign-document.controller';
 import { SignProcModule } from '../sign-proc/sign-proc.module';
@@ -12,9 +12,10 @@ import { TemplatesModule } from '../templates/templates.module';
     TypeOrmModule.forFeature([SignDocument]),
     SignProcModule,
     CommonModule,
-    TemplatesModule,
+    forwardRef(() => TemplatesModule),
   ],
   controllers: [SignDocumentController],
   providers: [SignDocumentService],
+  exports: [SignDocumentService],
 })
 export class SignDocumentModule {}

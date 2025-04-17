@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  LoggerService,
+} from '@nestjs/common';
 import { CreateTemplatesDto } from './dto/create-templates-dto';
 import { User } from '../users/entities/user.entity';
 import { rename } from 'fs/promises';
@@ -13,12 +19,18 @@ import { Requestee } from './entities/requestee.entity';
 import { CreateRequesteeDto } from './dto/create-requestee-dto';
 import { DtoBuilder } from '../base/dto';
 import { GetRequesteeDto } from './dto/get-requestee-dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { SignDocumentService } from '../sign-document/sign-document.service';
 
 @Injectable()
 export class TemplatesService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
     private readonly commonService: CommonService,
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => SignDocumentService))
+    private readonly signDocumentService: SignDocumentService,
     @InjectRepository(RequestESign)
     private readonly requestESignRepository: Repository<RequestESign>,
     @InjectRepository(Requestee)
@@ -309,6 +321,8 @@ export class TemplatesService {
       user,
     );
 
+    const oldRequesteeIds = oldRequestESign.requestees.map((item) => item.id);
+
     // 04. RequestESign 객체 업데이트 정보로 반영
     Object.assign(oldRequestESign, updateTemplatesDto);
 
@@ -352,10 +366,10 @@ export class TemplatesService {
       }
     }
 
-    // 08. 기존 requestee 데이터는 삭제
-    if (oldRequestESign.requestees) {
-      qr.manager.delete(Requestee, {
-        id: In([...oldRequestESign.requestees.map((item) => item.id)]),
+    // 08. 기존 requestee 데이터는 삭제 [hard delete]
+    if (oldRequesteeIds && oldRequesteeIds.length >= 0) {
+      await qr.manager.delete(Requestee, {
+        id: In(oldRequesteeIds),
       });
     }
 
@@ -367,14 +381,39 @@ export class TemplatesService {
     });
   }
 
+  /**
+   * 서명 템플릿 상태 변경
+   * @param id 템플릿 Id
+   * @param status 변경할 Status
+   * @param user 요청 사용자 정보
+   */
+  async statusUpdate(id: number, status: string, user: User) {
+    // 01. 변경 대상 RequestESign 데이터 찾기
+    const requestESign = await this.findOneById(id, user);
+    if (!requestESign) {
+      throw new BadRequestException('존재하지 않은 Template id 입니다.');
+    }
+
+    this.logger.log(
+      `템플릿 상태 변경 : ${requestESign.status} => ${status}`,
+      TemplatesService.name,
+    );
+
+    requestESign.status = status;
+
+    await this.requestESignRepository.save(requestESign);
+    this.logger.log(`템플릿 상태 변경 완료`, TemplatesService.name);
+  }
+
   async deleteTemplates(id: number, user: User, qr: QueryRunner) {
-    const template = await qr.manager.findOne(RequestESign, {
-      where: {
-        id,
-        isDeleted: false,
-        createdBy: { id: user.id },
-      },
-    });
+    // const template = await qr.manager.findOne(RequestESign, {
+    //   where: {
+    //     id,
+    //     isDeleted: false,
+    //     createdBy: { id: user.id },
+    //   },
+    // });
+    const template = await this.findOneById(id, user);
 
     if (!template) {
       throw new BadRequestException('존재하지 않은 Template id 입니다.');
@@ -384,6 +423,23 @@ export class TemplatesService {
     template.isActive = false;
     template.modifiedBy = user;
 
+    // 관련된 Requestee 삭제 처리
+    if (template.requestees && template.requestees.length >= 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      for (const [_, requestees] of template.requestees.entries()) {
+        requestees.isDeleted = true;
+        requestees.isActive = false;
+        requestees.modifiedBy = user;
+        await this.requesteeRepository.save(requestees);
+      }
+    }
+
+    // 관련된 SignDocument 삭제 처리
+    await this.signDocumentService.deleteSignDocument(id, user);
+    this.logger.log(
+      `관련된 SignDocument 데이터 삭제 처리 => Template id : ${id}`,
+      TemplatesService.name,
+    );
     return this.requestESignRepository.save(template);
 
     // return qr.manager

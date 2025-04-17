@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -25,7 +26,6 @@ import { DtoBuilder } from '../base/dto';
 import { SignDocument } from './entities/sign-document.entity';
 import { TemplatesService } from '../templates/templates.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SignLog } from '../sign-proc/entities/sign-log.entity';
 
 type FilePath = 'attachedFiles' | 'document';
 
@@ -37,6 +37,7 @@ export class SignDocumentService {
     private readonly commonService: CommonService,
     private readonly configService: ConfigService,
     private readonly signProcService: SignProcService,
+    @Inject(forwardRef(() => TemplatesService))
     private readonly templatesService: TemplatesService,
     @InjectRepository(SignDocument)
     private readonly signDocumentRepository: Repository<SignDocument>,
@@ -122,6 +123,28 @@ export class SignDocumentService {
     user: User,
     qr: QueryRunner,
   ) {
+    const templates = await this.templatesService.findOneById(
+      createSignDocumentDto.templatesId,
+      user,
+    );
+    if (!templates) {
+      throw new BadRequestException('생성된 Templates 정보가 없습니다.');
+    }
+
+    // 이미 해당 Templates에 관계된 SignDocument가 있는지 체크
+    const signDocumentByTemplatesId = await this.signDocumentRepository.findOne(
+      {
+        where: {
+          templates: { id: createSignDocumentDto.templatesId },
+          createdBy: { id: user.id },
+          isActive: true,
+        },
+      },
+    );
+    if (signDocumentByTemplatesId) {
+      throw new BadRequestException('이미 기존에 생성된 문서가 존재 합니다.');
+    }
+
     // 최종 PDF파일이 있는 경우 PDF파일 서명 처리
     if (createSignDocumentDto.editedFile) {
       const signLog = await this.signProcService.signByPDF(
@@ -137,6 +160,8 @@ export class SignDocumentService {
         );
       } else {
         createSignDocumentDto.editedFile = signLog.signedPdfFileName;
+        // editedFile이 있는 경우 editingStatus값 'complete'로 변경
+        createSignDocumentDto.editingStatus = 'complete';
       }
     }
 
@@ -148,14 +173,6 @@ export class SignDocumentService {
         tempFolder,
         createSignDocumentDto.attachedFiles,
       );
-    }
-
-    const templates = await this.templatesService.findOneById(
-      createSignDocumentDto.templatesId,
-      user,
-    );
-    if (!templates) {
-      throw new BadRequestException('생성된 Templates 정보가 없습니다.');
     }
 
     const saveSignDocumentDto = DtoBuilder.save(
@@ -174,6 +191,15 @@ export class SignDocumentService {
       })
       .execute();
 
+    // 템플릿 상태 변경 처리
+    if (signDocument) {
+      await this.templatesService.statusUpdate(
+        createSignDocumentDto.templatesId,
+        createSignDocumentDto.editingStatus,
+        user,
+      );
+    }
+
     return signDocument;
   }
 
@@ -184,6 +210,7 @@ export class SignDocumentService {
         createdBy: { id: user.id },
         isActive: true,
       },
+      relations: ['createdBy', 'templates'],
     });
 
     return signDocument;
@@ -232,6 +259,8 @@ export class SignDocumentService {
         );
       } else {
         updateSignDocumentDto.editedFile = signLog.signedPdfFileName;
+        // editedFile이 있는 경우 editingStatus값 'complete'로 변경
+        updateSignDocumentDto.editingStatus = 'complete';
       }
     }
 
@@ -262,16 +291,27 @@ export class SignDocumentService {
       await this.deleteFile(tempFolder);
     }
 
-    // 04. 업데이트 상태로 dto 변경
+    // 04. 해당 SignDocument에 해당 되는 Templates 조회
+    const templates = await this.templatesService.findOneById(
+      oldSignDocument.templates.id,
+      user,
+    );
+    if (!templates) {
+      throw new BadRequestException('생성된 Templates 정보가 없습니다.');
+    }
+    // 04-01. UpdateSignDocumentDto 요청에 templatesId 값이 변경되어도 무시   [2025. 04. 17 엄태영]
+    updateSignDocumentDto.templatesId = templates.id;
+
+    // 05. 업데이트 상태로 dto 변경
     const signDocumentDto = DtoBuilder.update(
       CreateSignDocumentDto,
       updateSignDocumentDto,
       user,
     );
 
-    // 05. RequestESign 객체 업데이트 정보로 반영
+    // 06. RequestESign 객체 업데이트 정보로 반영
     Object.assign(oldSignDocument, signDocumentDto);
-    // 05-01. addedAttachedFiles 정보가 있는 경우 기존 AttachedFiles에 병합
+    // 06-01. addedAttachedFiles 정보가 있는 경우 기존 AttachedFiles에 병합
     if (updateSignDocumentDto.addedAttachedFiles) {
       const updateAttachedFiles = [
         ...(oldSignDocument.attachedFiles ?? []),
@@ -280,8 +320,17 @@ export class SignDocumentService {
       oldSignDocument.attachedFiles = updateAttachedFiles;
     }
 
-    // 06. SignDocument 업데이트 반영
+    // 07. SignDocument 업데이트 반영
     await this.signDocumentRepository.save(oldSignDocument);
+
+    // 08. 템플릿 상태 변경 처리
+    if (updateSignDocumentDto.editingStatus) {
+      await this.templatesService.statusUpdate(
+        updateSignDocumentDto.templatesId,
+        updateSignDocumentDto.editingStatus,
+        user,
+      );
+    }
 
     return await qr.manager.findOne(SignDocument, {
       where: {
@@ -289,5 +338,23 @@ export class SignDocumentService {
       },
       relations: ['templates'],
     });
+  }
+
+  async deleteSignDocument(templateId: number, user: User) {
+    const signDocument = await this.findOneByTemplatesId(templateId, user);
+
+    if (!signDocument) {
+      this.logger.log(
+        '존재하지 않은 SignDocument 입니다.',
+        SignDocumentService.name,
+      );
+      return;
+    }
+
+    signDocument.isDeleted = true;
+    signDocument.isActive = false;
+    signDocument.modifiedBy = user;
+
+    return this.signDocumentRepository.save(signDocument);
   }
 }

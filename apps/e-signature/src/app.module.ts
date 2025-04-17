@@ -49,6 +49,7 @@ import { SignDocument } from './sign-document/entities/sign-document.entity';
       validationSchema: Joi.object({
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
+          .default('production')
           .required(),
         USE_S3_STORAGE: Joi.boolean().required(),
         DB_TYPE: Joi.string().valid('postgres').required(),

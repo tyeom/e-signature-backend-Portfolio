@@ -9,7 +9,10 @@
             "name": "Run Script: start:debug e-signature",
             "request": "launch",
             "command": "pnpm run start:debug e-signature",
-            "cwd": "${workspaceFolder}"
+            "cwd": "${workspaceFolder}",
+            "sourceMaps": true,
+            "smartStep": true,
+            "outFiles": ["${workspaceFolder}/dist/**/*.js"],
         }
     ]
 }
