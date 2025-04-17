@@ -21,7 +21,7 @@ export class CommonController {
     schema: {
       type: 'object',
       properties: {
-        attachedFile: {
+        attachedFiles: {
           type: 'string',
           format: 'binary',
         },

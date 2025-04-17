@@ -46,7 +46,7 @@ export class SignatureController {
     schema: {
       type: 'object',
       properties: {
-        signatureFile: {
+        signatureFiles: {
           type: 'string',
           format: 'binary',
         },

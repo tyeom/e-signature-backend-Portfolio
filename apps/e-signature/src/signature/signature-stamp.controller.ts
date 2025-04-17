@@ -43,7 +43,7 @@ export class SignatureStampController {
     schema: {
       type: 'object',
       properties: {
-        signatureFile: {
+        stampFiles: {
           type: 'string',
           format: 'binary',
         },
