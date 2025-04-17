@@ -1,5 +1,5 @@
 ######## Development 환경 ########
-FROM node:alpine AS Development
+FROM node:alpine AS development
 
 WORKDIR /usr/src/app
 
@@ -24,7 +24,7 @@ RUN pnpm build mailer
 CMD [ "pnpm", "start:dev", "mailer" ]
 
 ######## Production 환경 ########
-FROM node:alpine AS Production
+FROM node:alpine AS production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}

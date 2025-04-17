@@ -1,5 +1,16 @@
 ######## Development 환경 ########
-FROM node:alpine AS Development
+FROM node:slim AS development
+
+RUN apt-get update && apt-get install -y \
+  python3 \
+  make \
+  g++ \
+  libcairo2-dev \
+  libpango1.0-dev \
+  libjpeg-dev \
+  libgif-dev \
+  libvips-dev \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 
@@ -24,7 +35,7 @@ RUN pnpm build e-signature
 CMD [ "pnpm", "start:dev", "e-signature" ]
 
 ######## Production 환경 ########
-FROM node:alpine AS Production
+FROM node:slim AS production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
