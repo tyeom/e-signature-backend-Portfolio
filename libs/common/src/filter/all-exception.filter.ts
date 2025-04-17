@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { SshTunnel } from '../ssh-tunnel';
 import { throwError } from 'rxjs';
-import { Ctx, RpcException } from '@nestjs/microservices';
+import { RpcException } from '@nestjs/microservices';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

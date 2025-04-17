@@ -105,12 +105,12 @@ export class TemplatesService {
       .execute();
   }
 
-  private createRequestESignTeammatesRelation(
+  private async createRequestESignTeammatesRelation(
     qr: QueryRunner,
     requestESignId: number,
     teammates: User[],
   ) {
-    return qr.manager
+    return await qr.manager
       .createQueryBuilder()
       .relation(RequestESign, 'teammates')
       .of(requestESignId)
@@ -270,7 +270,12 @@ export class TemplatesService {
     const requestESignId = requestESign.identifiers[0].id;
 
     if (teammates) {
-      this.createRequestESignTeammatesRelation(qr, requestESignId, teammates);
+      await this.createRequestESignTeammatesRelation(
+        qr,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        requestESignId,
+        teammates,
+      );
     }
 
     if (saveCreateTemplatesDto.requestee) {

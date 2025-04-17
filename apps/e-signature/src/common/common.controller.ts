@@ -2,11 +2,10 @@ import {
   BadRequestException,
   Controller,
   Post,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { RBAC } from '@app/common/decorator';
 import { Role } from '@app/common';
 import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';

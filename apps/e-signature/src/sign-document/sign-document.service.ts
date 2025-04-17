@@ -99,7 +99,7 @@ export class SignDocumentService {
           join(process.cwd(), 'public', filePath, fileName),
         );
       } else {
-        this.commonService.saveMovieToPermanentStorage(fileName);
+        await this.commonService.saveMovieToPermanentStorage(fileName);
       }
     }
   }
