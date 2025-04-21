@@ -1,7 +1,6 @@
+## Server Design
+
 ![image](https://github.com/user-attachments/assets/8b16d240-c20a-493e-a60d-2f242b49b980)
-
-
-
 
 ***
 
