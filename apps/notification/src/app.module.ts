@@ -8,6 +8,7 @@ import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { APP_FILTER } from '@nestjs/core';
 import { AllExceptionsFilter } from '@app/common/filter';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 @Module({
   imports: [
@@ -62,9 +63,28 @@ import { AllExceptionsFilter } from '@app/common/filter';
             ),
           ),
         }),
-        new winston.transports.File({
+
+        // new winston.transports.File({
+        //   dirname: join(process.cwd(), 'apps', 'notification', 'logs'),
+        //   filename: 'notification.log',
+        //   format: winston.format.combine(
+        //     winston.format.timestamp(),
+        //     winston.format.printf(
+        //       (info) =>
+        //         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        //         `${info.timestamp} [${info.context}] [${info.level}] ${info.message}`,
+        //     ),
+        //   ),
+        // }),
+
+        // 일별 로그 파일 설정
+        new DailyRotateFile({
           dirname: join(process.cwd(), 'apps', 'notification', 'logs'),
           filename: 'notification.log',
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '14d',
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf(

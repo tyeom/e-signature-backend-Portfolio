@@ -49,7 +49,6 @@ export class SignProcService {
     // 원본 PDF 불러오기
     const pdfBuffer = readFileSync(pdfFile);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     const pdfWithPlaceholder: Buffer<ArrayBufferLike> = plainAddPlaceholder({
       pdfBuffer,
       reason: 'E-sign PDF signatures',

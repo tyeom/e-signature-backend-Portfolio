@@ -11,6 +11,7 @@ import { WinstonModule } from 'nest-winston';
 import winston from 'winston';
 import { MailTemplates } from './mailer/entities/mail-templates.entity';
 import { MailTemplatesDetail } from './mailer/entities/mail-templates-detail.entity';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 @Module({
   imports: [
@@ -63,9 +64,28 @@ import { MailTemplatesDetail } from './mailer/entities/mail-templates-detail.ent
             ),
           ),
         }),
-        new winston.transports.File({
+
+        // new winston.transports.File({
+        //   dirname: join(process.cwd(), 'apps', 'mailer', 'logs'),
+        //   filename: 'mailer.log',
+        //   format: winston.format.combine(
+        //     winston.format.timestamp(),
+        //     winston.format.printf(
+        //       (info) =>
+        //         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        //         `${info.timestamp} [${info.context}] [${info.level}] ${info.message}`,
+        //     ),
+        //   ),
+        // }),
+
+        // 일별 로그 파일 설정
+        new DailyRotateFile({
           dirname: join(process.cwd(), 'apps', 'mailer', 'logs'),
           filename: 'mailer.log',
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '14d',
           format: winston.format.combine(
             winston.format.timestamp(),
             winston.format.printf(

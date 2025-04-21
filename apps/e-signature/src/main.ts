@@ -4,6 +4,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SshTunnel } from '@app/common/ssh-tunnel';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
 
 async function bootstrap() {
   const serverOptions = {
@@ -49,6 +51,9 @@ async function bootstrap() {
       persistAuthorization: true,
     },
   });
+
+  const swaggerJsonPath = join(process.cwd(), 'public', 'swagger.json');
+  await writeFile(swaggerJsonPath, JSON.stringify(document));
 
   app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useGlobalPipes(

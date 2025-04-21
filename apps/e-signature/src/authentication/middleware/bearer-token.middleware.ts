@@ -4,6 +4,7 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  LoggerService,
   NestMiddleware,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -14,10 +15,13 @@ import * as forge from 'node-forge';
 import { NextFunction, Request, Response } from 'express';
 import { firstValueFrom } from 'rxjs';
 import { UsersService } from '../../users/users.service';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class BearerTokenMiddleware implements NestMiddleware {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
@@ -51,7 +55,9 @@ export class BearerTokenMiddleware implements NestMiddleware {
       const exponent = result.RSAKeyValue.Exponent;
 
       // Base64 디코딩 및 forge RSA 공개키 생성
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const modulusBuffer = Buffer.from(modulus, 'base64');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const exponentBuffer = Buffer.from(exponent, 'base64');
 
       const modulusHex = modulusBuffer.toString('hex');
@@ -70,7 +76,8 @@ export class BearerTokenMiddleware implements NestMiddleware {
       await this.cacheManager.set('publicKey', publicKey, 60 * 60 * 24 * 30);
       console.log('RSA 공개키 로드 완료');
     } catch (error) {
-      console.error('RSA 공개키 로드 실패:', error);
+      this.logger.log('RSA 공개키 로드 실패');
+      this.logger.error(error);
       throw error;
     }
   }
@@ -92,11 +99,12 @@ export class BearerTokenMiddleware implements NestMiddleware {
     try {
       let publicKey = await this.cacheManager.get('publicKey');
       if (!publicKey) {
+        console.log('인증서버 public key download');
         await this.fetchPublicKey();
         publicKey = await this.cacheManager.get('publicKey');
       }
       // 토큰 공개키로 검증
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const payload = await this.jwtService.verifyAsync(token, {
         publicKey: publicKey as string,
         algorithms: ['RS256'],
