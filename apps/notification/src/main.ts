@@ -24,7 +24,8 @@ async function bootstrap() {
     dstPort: parseInt(process.env.DB_PORT || '5432'),
   };
 
-  if (process.env.USE_SSH_TUNNEL === 'true') {
+  const useSSHTunnel = process.env.USE_SSH_TUNNEL === 'true';
+  if (useSSHTunnel) {
     const sshTunnelService = new SshTunnel(
       serverOptions,
       sshOptions,

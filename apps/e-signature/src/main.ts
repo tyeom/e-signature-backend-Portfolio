@@ -26,7 +26,8 @@ async function bootstrap() {
     dstPort: parseInt(process.env.DB_PORT || '5432'),
   };
 
-  if (process.env.USE_SSH_TUNNEL === 'true') {
+  const useSSHTunnel = process.env.USE_SSH_TUNNEL === 'true';
+  if (useSSHTunnel) {
     const sshTunnelService = new SshTunnel(
       serverOptions,
       sshOptions,
@@ -37,6 +38,17 @@ async function bootstrap() {
 
   const PORT = process.env.PORT || 8002;
   const app = await NestFactory.create(AppModule);
+  const isDebugMode = process.env.NODE_ENV === 'development';
+  // 디버그 모드인 경우 cors 모두 허용  [2025. 04. 21 엄태영]
+  if (isDebugMode) {
+    app.enableCors({
+      origin: '*',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      credentials: true,
+    });
+    console.log('Debug mode: CORS enabled for all origins');
+  }
+
   const config = new DocumentBuilder()
     .setTitle('E-SIGNATURE')
     .setDescription('E-SIGNATURE APIs')
